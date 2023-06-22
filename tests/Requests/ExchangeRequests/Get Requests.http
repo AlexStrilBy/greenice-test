@@ -1,0 +1,5 @@
+### Get all available exchange requests
+GET {{url}}/api/exchange-requests
+Content-Type: application/json
+Accept: application/json
+Authorization: Basic {{username}} {{password}}

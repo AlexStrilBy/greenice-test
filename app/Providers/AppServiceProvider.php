@@ -3,9 +3,16 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Src\Users\Repositories\IUserInfoRepository;
+use Src\Users\Repositories\UserInfoRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
+    public array $bindings = [
+        IUserInfoRepository::class => UserInfoRepository::class,
+    ];
+
+
     /**
      * Register any application services.
      */

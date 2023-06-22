@@ -1,12 +1,15 @@
 .DEFAULT_GOAL := init
+.PHONY : init-vendor start migrate seed
 
-init:
+init: init-vendor start migrate seed
+
+init-vendor:
 	docker run --rm \
-		-u "$(id -u):$(id -g)" \
-		-v "$(shell pwd):/var/www/html" \
-		-w /var/www/html \
-		laravelsail/php82-composer:latest \
-		composer install --ignore-platform-reqs
+    		-u "$(id -u):$(id -g)" \
+    		-v "$(shell pwd):/var/www/html" \
+    		-w /var/www/html \
+    		laravelsail/php82-composer:latest \
+    		composer install --ignore-platform-reqs
 
 start:
 	./vendor/bin/sail up -d
@@ -28,3 +31,12 @@ tinker:
 
 open:
 	./vendor/bin/sail open
+
+migrate:
+	./vendor/bin/sail artisan migrate
+
+migrate-rollback:
+	./vendor/bin/sail artisan migrate:rollback
+
+seed:
+	./vendor/bin/sail artisan db:seed

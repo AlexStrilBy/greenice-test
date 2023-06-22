@@ -1,8 +1,8 @@
 # Project requirements
-- Реализовать возможность обмена средствами между кошельками пользователей.
-- С каждой транзакции брать комиссию 2% в пользу системы.
-- Подготовить данные (seed) для демонстрации (несколько пользователей, кошельков и заявок)
-- Работа с системой осуществляется только через REST API.
+- Implement the ability to exchange funds between user wallets.
+- From each transaction take a commission of 2% in favor of the system.
+- Prepare data (seed) for demonstration (multiple users, wallets and claims)
+- Work with the system is carried out only through the REST API.
 
 Example:
 1. The user A has 2 wallets USD - 100, UAH - 500
