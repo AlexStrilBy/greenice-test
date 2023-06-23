@@ -18,10 +18,15 @@ use Illuminate\Support\Facades\Route;
 Route::group(['middleware' => ['auth.basic']], function () {
     Route::group(['prefix' => 'user'], function () {
         Route::get('/info', [UserInfoController::class, 'show']);
+
+        Route::group(['prefix' => 'exchange-requests'], function () {
+            Route::delete('/{id}', [ExchangeRequestsController::class, 'delete']);
+        });
     });
 
     Route::group(['prefix' => 'exchange-requests'], function () {
         Route::get('/', [ExchangeRequestsController::class, 'index']);
         Route::post('/', [ExchangeRequestsController::class, 'create']);
+        Route::post('/{exchange_request}', [ExchangeRequestsController::class, 'applyExchange']);
     });
 });

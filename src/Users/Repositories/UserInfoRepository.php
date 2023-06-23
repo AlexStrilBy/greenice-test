@@ -7,10 +7,10 @@ use App\Models\User;
 class UserInfoRepository implements IUserInfoRepository
 {
 
-    public function getUserInfoWithWallets(int $userId): User
+    public function getUserInfoWithWalletsAndExchangeRequests(int $userId): User
     {
         return User::query()
-            ->with('wallets')
+            ->with('wallets', 'exchangeRequests')
             ->where('id', $userId)
             ->firstOrFail();
     }

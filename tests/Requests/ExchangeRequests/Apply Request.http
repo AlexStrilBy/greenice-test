@@ -1,0 +1,5 @@
+### Create new exchange request
+POST {{url}}/api/exchange-requests/1
+Content-Type: application/x-www-form-urlencoded
+Accept: application/json
+Authorization: Basic {{username}} {{password}}

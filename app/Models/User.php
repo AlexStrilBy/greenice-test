@@ -48,4 +48,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserWallet::class, 'user_id', 'id');
     }
+
+    public function exchangeRequests(): HasMany
+    {
+        return $this->hasMany(ExchangeRequest::class, 'from_user_id', 'id');
+    }
 }

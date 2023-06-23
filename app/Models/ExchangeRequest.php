@@ -12,6 +12,11 @@ class ExchangeRequest extends Model
         'status' => ExchangeRequestStatuses::class,
     ];
 
+    protected $with = [
+        'fromCurrency',
+        'toCurrency',
+    ];
+
     public function fromUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'from_user_id', 'id');

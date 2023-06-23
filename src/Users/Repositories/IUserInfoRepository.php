@@ -2,7 +2,9 @@
 
 namespace Src\Users\Repositories;
 
+use App\Models\User;
+
 interface IUserInfoRepository
 {
-    public function getUserInfoWithWallets(int $userId);
+    public function getUserInfoWithWalletsAndExchangeRequests(int $userId): User;
 }

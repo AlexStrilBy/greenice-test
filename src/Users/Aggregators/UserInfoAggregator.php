@@ -2,6 +2,8 @@
 
 namespace Src\Users\Aggregators;
 
+use App\Models\ExchangeRequest;
+use Src\ExchangeRequests\DTO\ExchangeRequestDTO;
 use Src\Users\DTO\UserDTO;
 use Src\Users\DTO\UserInfoDTO;
 use Src\Users\Repositories\IUserInfoRepository;
@@ -17,12 +19,15 @@ class UserInfoAggregator
 
     public function getData(int $userId): UserInfoDTO
     {
-        $userWithWallets = $this->userInfoRepository->getUserInfoWithWallets($userId);
+        $userInfo = $this->userInfoRepository->getUserInfoWithWalletsAndExchangeRequests($userId);
 
         return new UserInfoDTO(
-            UserDTO::fromModel($userWithWallets),
+            UserDTO::fromModel($userInfo),
             WalletDTO::collection(
-                $userWithWallets->wallets->map(fn ($wallet) => WalletDTO::fromModel($wallet))
+                $userInfo->wallets->map(fn ($wallet) => WalletDTO::fromModel($wallet))
+            ),
+            ExchangeRequestDTO::collection(
+                $userInfo->exchangeRequests->map(fn ($exchangeRequest) => ExchangeRequestDTO::fromModel($exchangeRequest))
             )
         );
     }

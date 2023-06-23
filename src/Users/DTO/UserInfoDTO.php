@@ -13,6 +13,8 @@ class UserInfoDTO extends Data
         public UserDTO $user,
         #[DataCollectionOf(WalletDTO::class)]
         public DataCollection $wallets,
+        #[DataCollectionOf(WalletDTO::class)]
+        public DataCollection $exchangeRequests,
     )
     {
     }

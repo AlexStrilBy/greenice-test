@@ -1,0 +1,5 @@
+### GET user
+# @no-cookie-jar
+DELETE {{url}}/api/user/exchange-requests/1
+Accept: application/json
+Authorization: Basic {{username}} {{password}}
