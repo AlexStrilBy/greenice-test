@@ -9,6 +9,7 @@ return new class extends Migration {
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('exchange_request_id')->constrained('exchange_requests', 'id');
             $table->foreignId('from_wallet_id')->constrained('user_wallets', 'id');
             $table->foreignId('to_wallet_id')->constrained('user_wallets', 'id');
             $table->double('from_amount');

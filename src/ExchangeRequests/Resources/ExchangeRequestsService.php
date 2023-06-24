@@ -7,16 +7,16 @@ use App\Models\UserWallet;
 use DB;
 use Exception;
 use Src\ExchangeRequests\DTO\CreateExchangeRequestDTO;
+use Src\ExchangeRequests\Events\ExchangeRequestAppliedEvent;
 use Src\ExchangeRequests\Repositories\IExchangeRequestsRepository;
 use Src\ExchangeRequests\Resources\Enums\ExchangeRequestStatuses;
 use Src\Users\Repositories\IUserInfoRepository;
-use Src\Users\Repositories\UserInfoRepository;
 
 class ExchangeRequestsService
 {
     public function __construct(
-        private readonly IUserInfoRepository $userInfoRepository,
-        private readonly IExchangeRequestsRepository $exchangeRequestsRepository
+        private readonly IUserInfoRepository         $userInfoRepository,
+        private readonly IExchangeRequestsRepository $exchangeRequestsRepository,
     )
     {
     }
@@ -26,23 +26,24 @@ class ExchangeRequestsService
      */
     public function create(CreateExchangeRequestDTO $request): ExchangeRequest
     {
-        // region perform validation
-        $user = $this->userInfoRepository->getUserInfoWithWalletsAndExchangeRequests($request->userId);
+        return DB::transaction(function () use ($request) {
+            // region perform validation
+            $user = $this->userInfoRepository->getUserInfoWithWalletsAndExchangeRequests($request->userId);
 
-        $walletFrom = $user->wallets->where('currency_id', $request->fromCurrency)->first();
-        $walletTo = $user->wallets->where('currency_id', $request->toCurrency)->first();
+            $walletFrom = $user->wallets->where('currency_id', $request->fromCurrency)->first();
+            $walletTo = $user->wallets->where('currency_id', $request->toCurrency)->first();
 
-        if (!isset($walletFrom) || !isset($walletTo)) {
-            throw new Exception('You don\'t have this currencies in your wallets');
-        }
+            if (!isset($walletFrom) || !isset($walletTo)) {
+                throw new Exception('You don\'t have this currencies in your wallets');
+            }
 
-        if ($walletFrom->balance < $request->amountFrom) {
-            throw new Exception('Your balance is not enough to perform this exchange');
-        }
-        // endregion
+            if ($walletFrom->balance < $request->amountFrom) {
+                throw new Exception('Your balance is not enough to perform this exchange');
+            }
+            // endregion
 
-        // region create exchange request
-        return DB::transaction(function () use ($request, $walletFrom, $walletTo) {
+            // region create exchange request
+
             $walletFrom->balance -= $request->amountFrom;
             $walletFrom->save();
 
@@ -70,36 +71,37 @@ class ExchangeRequestsService
     /**
      * @throws Exception
      */
-    public function applyExchange(ExchangeRequest $exchangeRequest, $userId)
+    public function applyExchange(ExchangeRequest $exchangeRequest, int $userId)
     {
-        // region perform validation
-        $userApplier = $this->userInfoRepository->getUserInfoWithWalletsAndExchangeRequests($userId);
+        return DB::transaction(function () use ($exchangeRequest, $userId) {
+            // region perform validation
+            $userApplier = $this->userInfoRepository->getUserInfoWithWalletsAndExchangeRequests($userId);
 
-        if ($userApplier->id === $exchangeRequest->from_user_id) {
-            throw new Exception('You can\'t apply your own exchange request');
-        }
+            if ($userApplier->id === $exchangeRequest->from_user_id) {
+                throw new Exception('You can\'t apply your own exchange request');
+            }
 
-        $applierWalletFrom = $userApplier->wallets->where('currency_id', $exchangeRequest->to_currency_id)->first();
-        $applierWalletTo = $userApplier->wallets->where('currency_id', $exchangeRequest->from_currency_id)->first();
+            $applierWalletFrom = $userApplier->wallets->where('currency_id', $exchangeRequest->to_currency_id)->first();
+            $applierWalletTo = $userApplier->wallets->where('currency_id', $exchangeRequest->from_currency_id)->first();
 
-        if (!isset($applierWalletFrom) || !isset($applierWalletTo)) {
-            throw new Exception('You don\'t have this currencies in your wallets');
-        }
+            if (!isset($applierWalletFrom) || !isset($applierWalletTo)) {
+                throw new Exception('You don\'t have this currencies in your wallets');
+            }
 
-        if ($applierWalletFrom->balance < $exchangeRequest->to_amount) {
-            throw new Exception('Your balance is not enough to perform this exchange');
-        }
-        // endregion
+            if ($applierWalletFrom->balance < $exchangeRequest->to_amount_with_fee) {
+                throw new Exception('Your balance is not enough to perform this exchange');
+            }
+            // endregion
 
-        // region data fetching
-        $userCreator = $this->userInfoRepository->getUserInfoWithWalletsAndExchangeRequests($exchangeRequest->from_user_id);
+            // region data fetching
+            $userCreator = $this->userInfoRepository->getUserInfoWithWalletsAndExchangeRequests($exchangeRequest->from_user_id);
 
-        $creatorWalletTo = $userCreator->wallets->where('currency_id', $exchangeRequest->to_currency_id)->first();
-        //endregion
+            $creatorWalletTo = $userCreator->wallets->where('currency_id', $exchangeRequest->to_currency_id)->first();
+            $creatorWalletFrom = $userCreator->wallets->where('currency_id', $exchangeRequest->from_currency_id)->first();
+            //endregion
 
-        // region apply exchange request
-        return DB::transaction(function () use ($exchangeRequest, $applierWalletFrom, $applierWalletTo, $creatorWalletTo) {
-            $applierWalletFrom->balance -= $exchangeRequest->to_amount;
+            // region apply exchange request
+            $applierWalletFrom->balance -= $exchangeRequest->to_amount_with_fee;
             $applierWalletFrom->save();
 
             $applierWalletTo->balance += $exchangeRequest->from_amount;
@@ -111,9 +113,11 @@ class ExchangeRequestsService
             $exchangeRequest->status = ExchangeRequestStatuses::COMPLETED;
             $exchangeRequest->save();
 
+            ExchangeRequestAppliedEvent::dispatch($exchangeRequest, $creatorWalletFrom, $applierWalletTo);
+
             return $exchangeRequest;
+            // endregion
         });
-        // endregion
     }
 
     /**

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\ExchangeRequests\Controllers\ExchangeRequestsController;
+use App\Http\ExchangeRequests\Controllers\TransactionsController;
 use App\Http\Users\Controllers\UserInfoController;
 use Illuminate\Support\Facades\Route;
 
@@ -30,3 +31,5 @@ Route::group(['middleware' => ['auth.basic']], function () {
         Route::post('/{exchange_request}', [ExchangeRequestsController::class, 'applyExchange']);
     });
 });
+
+Route::get('/transactions-fee', [TransactionsController::class, 'systemFeeIndex']);

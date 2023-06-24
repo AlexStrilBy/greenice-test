@@ -15,12 +15,14 @@ use Src\ExchangeRequests\Resources\ExchangeRequestsService;
 
 class ExchangeRequestsController
 {
+    private readonly int $userId;
+
     public function __construct(
         private readonly ExchangeRequestsService $exchangeService,
         private readonly IExchangeRequestsRepository $exchangeRepository,
-        private readonly CommissionService $commissionService
     )
     {
+        $this->userId = auth()->id();
     }
 
     public function index(): JsonResponse
@@ -30,11 +32,8 @@ class ExchangeRequestsController
 
             return ApiAnswerService::success(
                 $exchangeRequests
-                    ->map(function ($exchangeRequest) {
-                        $exchangeRequest = $this->commissionService
-                            ->addCommissionToExchangeRequest($exchangeRequest, auth()->id());
-
-                        return ExchangeRequestDTO::fromModel($exchangeRequest)->toArray();
+                    ->map(function (ExchangeRequest $exchangeRequest) {
+                        return ExchangeRequestDTO::fromModel($exchangeRequest, $this->userId)->toArray();
                     })
                     ->toArray()
             );
@@ -51,7 +50,7 @@ class ExchangeRequestsController
             );
 
             return ApiAnswerService::success(
-                ExchangeRequestDTO::fromModel($exchangeRequest)->toArray()
+                ExchangeRequestDTO::fromModel($exchangeRequest, $this->userId)->toArray()
             );
         } catch (Exception $e) {
             return ApiAnswerService::failureMessage($e->getMessage());
@@ -64,7 +63,7 @@ class ExchangeRequestsController
             $exchangeRequest = $this->exchangeService->applyExchange($exchangeRequest, auth()->id());
 
             return ApiAnswerService::success(
-                ExchangeRequestDTO::fromModel($exchangeRequest)->toArray()
+                ExchangeRequestDTO::fromModel($exchangeRequest, $this->userId)->toArray()
             );
         } catch (Exception $e) {
             return ApiAnswerService::failureMessage($e->getMessage());
@@ -77,7 +76,7 @@ class ExchangeRequestsController
             $exchangeRequest = $this->exchangeService->closeExchange($id, auth()->id());
 
             return ApiAnswerService::success(
-                ExchangeRequestDTO::fromModel($exchangeRequest)->toArray()
+                ExchangeRequestDTO::fromModel($exchangeRequest, $this->userId)->toArray()
             );
         } catch (Exception $e) {
             return ApiAnswerService::failureMessage($e->getMessage());

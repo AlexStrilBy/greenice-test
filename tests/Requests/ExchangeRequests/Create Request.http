@@ -7,6 +7,6 @@ Authorization: Basic {{username}} {{password}}
 {
     "from_currency_id": 1,
     "to_currency_id": 3,
-    "amount_from": "100",
-    "amount_to": "500"
+    "amount_from": "50",
+    "amount_to": "2000"
 }

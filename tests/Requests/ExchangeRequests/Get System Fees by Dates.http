@@ -1,0 +1,4 @@
+### Get all available exchange requests
+GET {{url}}/api/transactions-fee?date_from=2023-06-23&date_to=2023-06-24
+Content-Type: application/json
+Accept: application/json

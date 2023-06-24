@@ -32,7 +32,7 @@ Example:
 
 
 # Available Makefile commands
-- `make` or `make init` - install vendor packages and sail
+- `make` or `make init` - install vendor packages and sail, run migrations and seeders
 - `make up` - start the project
 - `make down` - stop the project
 - `make restart` - restart the project
@@ -41,3 +41,7 @@ Example:
 - `make tty-root` - open bash in the container as root
 - `make test` - run tests
 - `make tinker` - start a new Laravel Tinker session
+
+# Testing requests
+- In directory `tests/Requests` you can find tests for API endpoints
+- In `tests/Requests/http-client.env.json` you can find environment variables for HTTP client 

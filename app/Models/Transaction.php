@@ -14,6 +14,15 @@ class Transaction extends Model
         'system_fee_currency_id'
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+    ];
+
+    public function exchangeRequest(): BelongsTo
+    {
+        return $this->belongsTo(ExchangeRequest::class, 'exchange_request_id', 'id');
+    }
+
     public function fromWallet(): BelongsTo
     {
         return $this->belongsTo(UserWallet::class, 'from_wallet_id', 'id');

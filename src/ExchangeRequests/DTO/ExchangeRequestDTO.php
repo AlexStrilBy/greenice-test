@@ -22,7 +22,7 @@ class ExchangeRequestDTO extends Data
     {
     }
 
-    public static function fromModel(ExchangeRequest $exchangeRequest): ExchangeRequestDTO
+    public static function fromModel(ExchangeRequest $exchangeRequest, int $userId): ExchangeRequestDTO
     {
         return new self(
             $exchangeRequest->id,
@@ -30,7 +30,9 @@ class ExchangeRequestDTO extends Data
             CurrencyDTO::fromModel($exchangeRequest->fromCurrency),
             CurrencyDTO::fromModel($exchangeRequest->toCurrency),
             $exchangeRequest->from_amount,
-            $exchangeRequest->to_amount,
+            $exchangeRequest->from_user_id === $userId ?
+                $exchangeRequest->to_amount :
+                $exchangeRequest->to_amount_with_fee,
             $exchangeRequest->status,
             $exchangeRequest->created_at
         );
